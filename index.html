@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Секретный Альбом</title>
+    <title>Облачный Альбом</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -25,155 +25,77 @@
         }
 
         #login-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: var(--bg-color);
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; background-color: var(--bg-color);
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;
         }
-
         #login-screen.hidden { display: none; }
 
         .login-box {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            text-align: center;
-            width: 300px;
+            background: var(--card-bg); padding: 40px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; width: 300px;
         }
 
         input[type="password"], button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
+            width: 100%; padding: 12px; margin: 10px 0; border: none;
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
         }
-
-        input[type="password"] {
-            background: #2c2c2c;
-            color: white;
-            outline: none;
-        }
-
+        input[type="password"] { background: #2c2c2c; color: white; outline: none; }
+        
         button {
-            background-color: var(--accent-color);
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
+            background-color: var(--accent-color); color: #000; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
         }
-
         button:hover { background-color: #a06cd5; }
         button:disabled { background-color: #555; cursor: not-allowed; }
 
-        #login-error {
-            color: var(--error-color);
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
-        }
+        #login-error { color: var(--error-color); font-size: 14px; margin-top: 10px; display: none; }
 
         #album-screen { display: none; width: 100%; max-width: 1200px; }
         #album-screen.active { display: block; }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;
         }
 
         .upload-area {
-            border: 2px dashed #444;
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-bottom: 30px;
-            position: relative;
+            border: 2px dashed #444; padding: 30px; text-align: center;
+            border-radius: 10px; cursor: pointer; transition: 0.3s;
+            margin-bottom: 30px; position: relative;
         }
-
         .upload-area:hover { border-color: var(--accent-color); background: rgba(187, 134, 252, 0.05); }
         .upload-area input { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
 
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        
         .gallery-item {
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            position: relative;
+            background: var(--card-bg); border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: transform 0.2s; position: relative;
         }
-
         .gallery-item:hover { transform: translateY(-5px); }
-
-        .gallery-item img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            display: block;
-        }
+        .gallery-item img { width: 100%; height: 250px; object-fit: cover; display: block; }
 
         .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: var(--error-color);
-            border: none;
-            border-radius: 15px;
-            width: auto;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: 0.3s;
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7);
+            color: var(--error-color); border: none; border-radius: 15px; width: auto;
+            padding: 5px 10px; cursor: pointer; font-size: 14px; opacity: 0; transition: 0.3s;
         }
-
         .gallery-item:hover .delete-btn { opacity: 1; }
 
         .loader {
-            border: 4px solid #333;
-            border-top: 4px solid var(--accent-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
+            border: 4px solid #333; border-top: 4px solid var(--accent-color);
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+            margin: 20px auto; display: none;
         }
+        .status-msg { text-align: center; color: #aaa; margin-bottom: 20px; font-style: italic; }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Мелкая правка для мобильных */
-        @media (max-width: 600px) {
-            .header button { width: auto; padding: 10px 15px; }
-        }
+        @media (max-width: 600px) { .header button { width: auto; padding: 10px 15px; } }
     </style>
 </head>
 <body>
 
-    <!-- Экран входа -->
     <div id="login-screen">
         <div class="login-box">
             <h2>Вход в альбом</h2>
@@ -183,16 +105,17 @@
         </div>
     </div>
 
-    <!-- Экран альбома -->
     <div id="album-screen">
         <div class="header">
-            <h1>Мой фотоальбом 📸</h1>
+            <h1>Облачное фотохранилище ☁️</h1>
             <button onclick="logout()" style="width: auto; background: #333; color: white;">Выйти</button>
         </div>
 
+        <div class="status-msg" id="status-msg">Синхронизация с облаком...</div>
+
         <div class="upload-area" id="upload-area">
             <h3>Нажмите или перетащите фотографии сюда</h3>
-            <p>Фотографии загрузятся в облако ImgBB</p>
+            <p>Они навсегда сохранятся в интернете</p>
             <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
             <div class="loader" id="upload-loader"></div>
         </div>
@@ -201,17 +124,32 @@
     </div>
 
     <script>
-        // === НАСТРОЙКИ ===
-        const API_KEY = '6a8307442db5a174c3e97d1ab8d4f1df'; 
-        const CORRECT_PASSWORD = '1234'; // Поменяйте на свой
-        // =================
+        // ==========================================
+        // === НАСТРОЙКИ ОБЛАКА (ОБЯЗАТЕЛЬНО!) ===
+        // ==========================================
+        
+        // 1. ВАШ API КЛЮЧ С ImgBB.com
+        const IMGBB_API_KEY = '6a8307442db5a174c3e97d1ab8d4f1df'; 
+        
+        // 2. ВАШ MASTER KEY С JSONBin.io (должен начинаться с $2a$...)
+        const JSONBIN_API_KEY = '$2a$10$l62qBcH24mWekTtbVA9Jn.vtzor/phnkkjFNIaJKf1ei2QUC1gUO.'; 
+        
+        // 3. ID ВАШЕГО СОЗДАННОГО BIN (напр. 654321abc123456789012345)
+        const BIN_ID = 'hulio'; 
 
+        // 4. ПАРОЛЬ ОТ САЙТА
+        const CORRECT_PASSWORD = '1234'; 
+        // ==========================================
+
+        let cloudPhotos = []; // Глобальный массив ссылок
+
+        // --- АВТОРИЗАЦИЯ ---
         function checkPassword() {
             const pass = document.getElementById('password-input').value;
             if (pass === CORRECT_PASSWORD) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('album-screen').classList.add('active');
-                loadGallery();
+                loadGalleryFromCloud();
             } else {
                 const err = document.getElementById('login-error');
                 err.style.display = 'block';
@@ -225,7 +163,27 @@
             document.getElementById('password-input').value = '';
         }
 
-        // Надежная функция конвертации файла в Base64 для отправки
+        // --- РАБОТА С ОБЛАКОМ (JSONBin) ---
+        async function fetchCloudData() {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+            });
+            const data = await res.json();
+            return data.record?.photos || [];
+        }
+
+        async function saveCloudData(photosArray) {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY
+                },
+                body: JSON.stringify({ photos: photosArray })
+            });
+        }
+
+        // --- ЗАГРУЗКА ФОТО (ImgBB) ---
         function getBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -236,100 +194,112 @@
         }
 
         async function uploadToImgBB(file) {
-            try {
-                // Конвертируем файл в base64 строку
-                const base64Image = await getBase64(file);
-                
-                const formData = new FormData();
-                // Отправляем уже готовую строку, а не файл (решает проблемы с CORS на GitHub Pages)
-                formData.append('image', base64Image.split(',')[1]);
-                
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (!data.success) {
-                    console.error('Ошибка ImgBB:', data.error);
-                    throw new Error(data.error.message || 'Ошибка API');
-                }
-                
-                return data.data.display_url;
-            } catch (error) {
-                console.error('Ошибка сети:', error);
-                throw error;
-            }
+            const base64Image = await getBase64(file);
+            const formData = new FormData();
+            formData.append('image', base64Image.split(',')[1]);
+            
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error('Ошибка ImgBB');
+            return data.data.display_url;
         }
 
-        async function handleFiles(files) {
-            const loader = document.getElementById('upload-loader');
-            const uploadArea = document.getElementById('upload-area');
-            loader.style.display = 'block';
-            uploadArea.style.pointerEvents = 'none';
-
-            let photos = [];
-            try {
-                photos = JSON.parse(localStorage.getItem('myAlbumPhotos') || '[]');
-            } catch (e) {
-                photos = [];
-            }
-
-            for (let i = 0; i < files.length; i++) {
-                try {
-                    const url = await uploadToImgBB(files[i]);
-                    photos.push(url);
-                } catch (e) {
-                    alert(`Не удалось загрузить ${files[i].name}. Проверьте консоль (F12).`);
-                }
-            }
-
-            try {
-                localStorage.setItem('myAlbumPhotos', JSON.stringify(photos));
-            } catch (e) {
-                alert('Память браузера переполнена! Удалите старые фото.');
-            }
-            
-            loader.style.display = 'none';
-            uploadArea.style.pointerEvents = 'auto';
-            document.getElementById('file-input').value = '';
-            
-            loadGallery();
-        }
-
-        function loadGallery() {
+        // --- ЛОГИКА ГАЛЕРЕИ ---
+        async function loadGalleryFromCloud() {
+            const status = document.getElementById('status-msg');
             const gallery = document.getElementById('gallery');
-            let photos = [];
+            gallery.innerHTML = '';
+            status.innerText = 'Загрузка данных из облака...';
+            status.style.display = 'block';
+
             try {
-                photos = JSON.parse(localStorage.getItem('myAlbumPhotos') || '[]');
-            } catch (e) { photos = []; }
-            
+                cloudPhotos = await fetchCloudData();
+                status.style.display = 'none';
+                renderGallery();
+            } catch (e) {
+                status.innerText = 'Ошибка подключения к облаку. Проверьте API ключи и ID бина (F12).';
+                status.style.color = '#cf6679';
+                console.error('Ошибка JSONBin:', e);
+            }
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
             
-            if (photos.length === 0) {
+            if (cloudPhotos.length === 0) {
                 gallery.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#666;">Альбом пуст. Загрузите первую фотографию!</p>';
                 return;
             }
 
-            photos.forEach((url, index) => {
+            cloudPhotos.forEach((url, index) => {
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
                 item.innerHTML = `
-                    <img src="${url}" alt="Фото ${index + 1}" loading="lazy" onerror="this.parentElement.remove()">
+                    <img src="${url}" alt="Фото" loading="lazy" onerror="this.parentElement.remove()">
                     <button class="delete-btn" onclick="deletePhoto(${index})">✕ Удалить</button>
                 `;
                 gallery.appendChild(item);
             });
         }
 
-        function deletePhoto(index) {
-            if(confirm('Удалить это фото из альбома?')) {
-                let photos = JSON.parse(localStorage.getItem('myAlbumPhotos') || '[]');
-                photos.splice(index, 1);
-                localStorage.setItem('myAlbumPhotos', JSON.stringify(photos));
-                loadGallery();
+        async function handleFiles(files) {
+            const loader = document.getElementById('upload-loader');
+            const uploadArea = document.getElementById('upload-area');
+            const status = document.getElementById('status-msg');
+            
+            loader.style.display = 'block';
+            uploadArea.style.pointerEvents = 'none';
+            status.style.display = 'block';
+            status.style.color = '#aaa';
+
+            for (let i = 0; i < files.length; i++) {
+                status.innerText = `Загрузка файла ${i + 1} из ${files.length}...`;
+                try {
+                    const url = await uploadToImgBB(files[i]);
+                    cloudPhotos.push(url); // Добавляем в глобальный массив
+                } catch (e) {
+                    alert(`Ошибка при загрузке ${files[i].name}`);
+                }
             }
+
+            status.innerText = 'Сохранение в облако...';
+            try {
+                // Отправляем весь обновленный массив в JSONBin
+                await saveCloudData(cloudPhotos);
+                status.style.display = 'none';
+            } catch (e) {
+                status.innerText = 'Фотографии загружены, но ОШИБКА сохранения списка в облако!';
+                status.style.color = '#cf6679';
+                console.error('Ошибка сохранения:', e);
+            }
+            
+            loader.style.display = 'none';
+            uploadArea.style.pointerEvents = 'auto';
+            document.getElementById('file-input').value = '';
+            renderGallery();
+        }
+
+        async function deletePhoto(index) {
+            if(!confirm('Удалить это фото навсегда?')) return;
+            
+            cloudPhotos.splice(index, 1); // Удаляем из массива
+            const status = document.getElementById('status-msg');
+            status.style.display = 'block';
+            status.style.color = '#aaa';
+            status.innerText = 'Обновление облака...';
+
+            try {
+                await saveCloudData(cloudPhotos); // Перезаписываем облако
+                status.style.display = 'none';
+            } catch (e) {
+                status.innerText = 'Ошибка удаления из облака!';
+                status.style.color = '#cf6679';
+            }
+            renderGallery();
         }
 
         document.getElementById('password-input').addEventListener('keypress', function (e) {
