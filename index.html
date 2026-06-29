@@ -240,7 +240,7 @@
                 // Если ImgBB вернул ошибку
                 if (!data.success) {
                     console.error('Ошибка ImgBB:', data.error);
-                    throw new Error(data.error.message || 'Ошибка API');
+                    throw new Error(data.error.message || 'Ошибка API-2');
                 }
                 
                 return data.data.display_url;
