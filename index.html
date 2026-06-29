@@ -134,14 +134,14 @@
         // 2. ВАШ MASTER KEY С JSONBin.io (должен начинаться с $2a$...)
         const JSONBIN_API_KEY = '$2a$10$l62qBcH24mWekTtbVA9Jn.vtzor/phnkkjFNIaJKf1ei2QUC1gUO.'; 
         
-        // 3. ID ВАШЕГО СОЗДАННОГО BIN (напр. 654321abc123456789012345)
-        const BIN_ID = 'hulio'; 
+        // 3. ID ВАШЕГО СОЗДАННОГО BIN (ЗАМЕНИТЕ 'hulio' НА ВАЛИДНЫЙ ID, напр. '654321abc123456789012345')
+        const BIN_ID = '$2a$10$4isn3dLfG58m2lBRsgFxE.BoQ9k3bOEzDrcF01pZKI7wUJlzHlWrG'; 
 
         // 4. ПАРОЛЬ ОТ САЙТА
         const CORRECT_PASSWORD = '1234'; 
         // ==========================================
 
-        let cloudPhotos = []; // Глобальный массив ссылок
+        let cloudPhotos = [];
 
         // --- АВТОРИЗАЦИЯ ---
         function checkPassword() {
@@ -161,19 +161,31 @@
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('album-screen').classList.remove('active');
             document.getElementById('password-input').value = '';
+            cloudPhotos = []; // Очищаем локальный кэш при выходе
         }
 
         // --- РАБОТА С ОБЛАКОМ (JSONBin) ---
         async function fetchCloudData() {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+            // Добавлен параметр ?t=... и заголовки отмены кэширования для синхронизации всех устройств
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, {
+                headers: { 
+                    'X-Master-Key': JSONBIN_API_KEY,
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                },
+                cache: 'no-store'
             });
+            
+            if (!res.ok) {
+                throw new Error(`Ошибка загрузки: ${res.status} ${res.statusText}. Возможно, неверный BIN_ID.`);
+            }
+            
             const data = await res.json();
             return data.record?.photos || [];
         }
 
         async function saveCloudData(photosArray) {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -181,6 +193,10 @@
                 },
                 body: JSON.stringify({ photos: photosArray })
             });
+            
+            if (!res.ok) {
+                throw new Error(`Ошибка сохранения: ${res.status} ${res.statusText}`);
+            }
         }
 
         // --- ЗАГРУЗКА ФОТО (ImgBB) ---
@@ -220,7 +236,7 @@
                 status.style.display = 'none';
                 renderGallery();
             } catch (e) {
-                status.innerText = 'Ошибка подключения к облаку. Проверьте API ключи и ID бина (F12).';
+                status.innerText = 'Ошибка подключения к облаку! Проверьте, правильно ли указан BIN_ID.';
                 status.style.color = '#cf6679';
                 console.error('Ошибка JSONBin:', e);
             }
@@ -240,7 +256,7 @@
                 item.className = 'gallery-item';
                 item.innerHTML = `
                     <img src="${url}" alt="Фото" loading="lazy" onerror="this.parentElement.remove()">
-                    <button class="delete-btn" onclick="deletePhoto(${index})">✕ Удалить</button>
+                    <button class="delete-btn" onclick="deletePhoto(${index})">🗑 Удалить</button>
                 `;
                 gallery.appendChild(item);
             });
@@ -256,25 +272,30 @@
             status.style.display = 'block';
             status.style.color = '#aaa';
 
+            let newPhotos = []; // Временный массив для новых загрузок
+
             for (let i = 0; i < files.length; i++) {
                 status.innerText = `Загрузка файла ${i + 1} из ${files.length}...`;
                 try {
                     const url = await uploadToImgBB(files[i]);
-                    cloudPhotos.push(url); // Добавляем в глобальный массив
+                    newPhotos.push(url);
                 } catch (e) {
                     alert(`Ошибка при загрузке ${files[i].name}`);
                 }
             }
 
-            status.innerText = 'Сохранение в облако...';
+            status.innerText = 'Сохранение базы данных в облако...';
             try {
-                // Отправляем весь обновленный массив в JSONBin
+                // Перед сохранением обновляем список с сервера, чтобы не затереть фото с других устройств
+                const currentCloudData = await fetchCloudData();
+                cloudPhotos = [...currentCloudData, ...newPhotos];
+                
                 await saveCloudData(cloudPhotos);
                 status.style.display = 'none';
             } catch (e) {
-                status.innerText = 'Фотографии загружены, но ОШИБКА сохранения списка в облако!';
+                status.innerText = 'ОШИБКА сохранения базы данных! Проверьте BIN_ID.';
                 status.style.color = '#cf6679';
-                console.error('Ошибка сохранения:', e);
+                console.error('Ошибка сохранения:',f e);
             }
             
             loader.style.display = 'none';
@@ -286,18 +307,22 @@
         async function deletePhoto(index) {
             if(!confirm('Удалить это фото навсегда?')) return;
             
-            cloudPhotos.splice(index, 1); // Удаляем из массива
             const status = document.getElementById('status-msg');
             status.style.display = 'block';
             status.style.color = '#aaa';
             status.innerText = 'Обновление облака...';
 
             try {
-                await saveCloudData(cloudPhotos); // Перезаписываем облако
+                // Синхронизируем перед удалением на случай, если другой пользователь тоже что-то удалил
+                cloudPhotos = await fetchCloudData();
+                cloudPhotos.splice(index, 1); 
+                
+                await saveCloudData(cloudPhotos);
                 status.style.display = 'none';
             } catch (e) {
                 status.innerText = 'Ошибка удаления из облака!';
                 status.style.color = '#cf6679';
+                console.error(e);
             }
             renderGallery();
         }
